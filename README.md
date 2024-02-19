@@ -2,7 +2,7 @@
 The **Blind Prophet** problem involves navigating to a target location without direct visual information about the environment. The only available data at each step is the distance to the target. The challenge is to efficiently determine the target's location and navigate to it using minimal moves.
 
 # The approach
-This is a novel algorithm developed to address the "Blind Prophet" challenge. It combines geometric principles, triangulation, and strategic navigation to deduce the target's location and plot an optimal path towards it with a minimal number of moves. This approach is distinguished by its use of indirect information (distance measurements) to solve a complex navigation problem.
+This is a novel algorithm developed to address the **Blind Prophet** challenge. It combines geometric principles, triangulation, and strategic navigation to deduce the target's location and plot an optimal path towards it with a minimal number of moves. This approach is distinguished by its use of indirect information (distance measurements) to solve a complex navigation problem.
 
 # How It Works
 1. **Initial Phase (Triangulation)**:
