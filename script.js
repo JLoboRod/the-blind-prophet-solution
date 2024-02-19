@@ -1,150 +1,88 @@
-// The Blind Prophet
+// The Blind Prophet's solution
 
-var initialDistance = undefined;
+let initialDistance = undefined;
 const directions = ["up", "down", "left", "right"];
-var moves = ["up", "right"];
-var lastMove = undefined;
+const fakeMoves = ["right", "up"];
+let moves = [];
+let lastMove = undefined;
+// (x0, y0) is the goal point
+let x0;
+let y0;
 
-// (x0, y0) the goal point
-var x0;
-var y0;
+function isVertical(move) {
+  return move === "up" || move === "down";
+}
 
-var pathSet = false; // We have no path set yet even if we know where the goal is
-
-function getCoordinate(distance) {
+function getCoordinate(distance, initialDistance) {
   return Math.round(
     (Math.pow(initialDistance, 2) - Math.pow(distance, 2) + 1) / 2
   );
 }
 
-// It sets an optimised move list towards the goal
-function getMovesToPoint(x0, y0) {
-  const movesToGoal = [];
-
-  // Minimum value between abs(x0) and abs(y0)
-  var min = Math.min(Math.abs(x0), Math.abs(y0));
-
-  // Maximum value between abs(x0) and abs(y0) -> We don't use it
-  var max = Math.max(Math.abs(x0), Math.abs(y0));
-  console.log("min: " + min, "max: " + max);
-
-  var x0n = x0 / min;
-  var y0n = y0 / min;
-  console.log("x0n= " + Math.abs(Math.floor(x0n)));
-  console.log("y0n= " + Math.abs(Math.floor(y0n)));
-  var remainder;
-  var move;
-
-  if (Math.abs(x0) >= Math.abs(y0)) {
-    for (var i = 0; i < min; i++) {
-      for (var j = 0; j < Math.floor(Math.abs(x0n)); j++) {
-        move = x0 < 0 ? "left" : "right";
-        movesToGoal.push(move);
-      }
-      for (var k = 0; k < Math.floor(Math.abs(y0n)); k++) {
-        move = y0 < 0 ? "down" : "up";
-        movesToGoal.push(move);
-      }
-    }
-
-    remainder = Math.abs(x0 % min);
-    console.log("remainderX: " + remainder);
-    move = x0 < 0 ? "left" : "right";
-    for (var l = 0; l < remainder; l++) {
-      movesToGoal.push(move);
-    }
-  } else if (Math.abs(y0) > Math.abs(x0)) {
-    for (var i = 0; i < min; i++) {
-      for (var j = 0; j < Math.floor(Math.abs(x0n)); j++) {
-        move = x0 < 0 ? "left" : "right";
-        movesToGoal.push(move);
-      }
-      for (var k = 0; k < Math.floor(Math.abs(y0n)); k++) {
-        move = y0 < 0 ? "down" : "up";
-        movesToGoal.push(move);
-      }
-    }
-
-    remainder = Math.abs(y0 % min);
-    console.log("remainderY: " + remainder);
-    move = y0 < 0 ? "down" : "up";
-    for (var l = 0; l < remainder; l++) {
-      movesToGoal.push(move);
-    }
-  }
-
-  console.log(x0n + " ... " + y0n);
-  console.log(movesToGoal);
-
-  return movesToGoal;
+function reverseMove(move) {
+  const oppositeMove = { up: "down", down: "up", left: "right", right: "left" };
+  return oppositeMove[move];
 }
 
-function restoreMov(lastMov) {
-  var nextMove;
-
-  switch (lastMov) {
-    case "up":
-      nextMove = "down";
-      break;
-    case "down":
-      nextMove = "up";
-      break;
-    case "left":
-      nextMove = "right";
-      break;
-    case "right":
-      nextMove = "left";
-      break;
-  }
-
-  return nextMove;
-}
-
-function amILost() {
+function isProphetLost() {
   return !x0 || !y0;
 }
 
-function tick(distance) {
-  // The next move which we return from this function
-  var nextMove;
+function getMovesToPoint(x0, y0) {
+  const newMoves = [];
 
-  // initialDistance only has to be set once
-  // That's because when we make a fake move
-  // we always come back to the origin => same distance
-  // But this looks britle to me
-  if (!initialDistance) {
-    initialDistance = distance;
-    console.log(initialDistance);
-  }
-
-  // The Prophet doesn't know where to go...
-  if (amILost()) {
-    // This means I made a fake move
-    if (lastMove) {
-      // y0 because our first fake move is "up"
-      // If we change it, it breaks
-      if (!y0) {
-        y0 = getCoordinate(distance);
-        console.log("distance Y:" + distance);
-      } else if (!x0) {
-        x0 = getCoordinate(distance);
-        console.log("distance X: " + distance);
-        console.log("Goal: " + x0 + ", " + y0);
-      }
-
-      nextMove = restoreMov(lastMove);
-      lastMove = undefined;
-    } else {
-      nextMove = moves.shift();
-      lastMove = nextMove;
-      console.log("Next Move: " + nextMove);
+  // Horizontal movement
+  if (x0 > 0) {
+    for (let i = 0; i < x0; i++) {
+      newMoves.push("right");
     }
   } else {
-    if (!pathSet) {
-      moves = getMovesToPoint(x0, y0);
-      pathSet = true; // Ready to go!
+    for (let i = 0; i < Math.abs(x0); i++) {
+      newMoves.push("left");
+    }
+  }
+
+  // Vertical movement
+  if (y0 > 0) {
+    for (let j = 0; j < y0; j++) {
+      newMoves.push("up");
+    }
+  } else {
+    for (let j = 0; j < Math.abs(y0); j++) {
+      newMoves.push("down");
+    }
+  }
+
+  return newMoves;
+}
+
+function tick(distance) {
+  let nextMove;
+
+  // We need to store the initialDistance
+  // at (0, 0) to get coordinates
+  if (!initialDistance) {
+    initialDistance = distance;
+  }
+
+  if (isProphetLost()) {
+    if (lastMove) {
+      if (!y0 && isVertical(lastMove)) {
+        y0 = getCoordinate(distance, initialDistance);
+      } else if (!x0 && !isVertical(lastMove)) {
+        x0 = getCoordinate(distance, initialDistance);
+      }
+      // We need to get back to the initial point
+      nextMove = reverseMove(lastMove);
+      lastMove = undefined;
     } else {
-      // We already have moves towards the goal
+      nextMove = fakeMoves.shift();
+      lastMove = nextMove;
+    }
+  } else {
+    if (moves.length === 0 && distance !== 0) {
+      moves = getMovesToPoint(x0, y0);
+    } else {
       nextMove = moves.shift();
       lastMove = nextMove;
     }
